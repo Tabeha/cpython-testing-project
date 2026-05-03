@@ -56,6 +56,25 @@ for i in range(100):
 """
     result = timeit.timeit(code, number=1000)
     print("List search:", result)
+    
+def benchmark_set_membership():
+    code = """
+data = set(range(10000))
+for i in range(10000):
+    value = i in data
+"""
+    result = timeit.timeit(code, number=1000)
+    print("Set membership:", result)
+
+
+def benchmark_list_membership():
+    code = """
+data = list(range(10000))
+for i in range(1000):
+    value = i in data
+"""
+    result = timeit.timeit(code, number=100)
+    print("List membership:", result)
 
 
 if __name__ == "__main__":
@@ -70,3 +89,8 @@ if __name__ == "__main__":
     print("\nBenchmark 3: dict lookup vs list search")
     benchmark_dict_lookup()
     benchmark_list_search()
+    print("\nBenchmark 4: set membership vs list membership")
+    benchmark_set_membership()
+    benchmark_list_membership()
+    
+    
