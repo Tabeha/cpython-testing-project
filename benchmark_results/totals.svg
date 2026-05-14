@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="640">
+<style>
+text {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  fill: #1f2937;
+}
+.title {
+  font-size: 24px;
+  font-weight: bold;
+}
+.subtitle {
+  font-size: 13px;
+  fill: #4b5563;
+}
+</style>
+<rect width="100%" height="100%" fill="#ffffff" />
+<text x="280" y="36" class="title">Benchmark totals, seconds</text>
+<text x="280" y="58" class="subtitle">Average of 5 runs</text>
+<line x1="280" y1="60" x2="280" y2="590" stroke="#9ca3af" />
+<rect x="280" y="70" width="8.24" height="32" fill="#2563eb" rx="4" /><rect x="280" y="120" width="9.06" height="32" fill="#2563eb" rx="4" /><rect x="280" y="170" width="1.00" height="32" fill="#2563eb" rx="4" /><rect x="280" y="220" width="1.00" height="32" fill="#2563eb" rx="4" /><rect x="280" y="270" width="8.03" height="32" fill="#2563eb" rx="4" /><rect x="280" y="320" width="720.00" height="32" fill="#2563eb" rx="4" /><rect x="280" y="370" width="5.42" height="32" fill="#2563eb" rx="4" /><rect x="280" y="420" width="34.84" height="32" fill="#2563eb" rx="4" />
+<text x="266" y="91" text-anchor="end">List comprehension vs for loop / List comprehension</text><text x="266" y="141" text-anchor="end">List comprehension vs for loop / For loop with append</text><text x="266" y="191" text-anchor="end">String join vs string += / String join</text><text x="266" y="241" text-anchor="end">String join vs string += / String +=</text><text x="266" y="291" text-anchor="end">Dict lookup vs list search / Dict lookup</text><text x="266" y="341" text-anchor="end">Dict lookup vs list search / List search</text><text x="266" y="391" text-anchor="end">Set membership vs list membership / Set membership</text><text x="266" y="441" text-anchor="end">Set membership vs list membership / List membership</text>
+<text x="298.24" y="91">0.674 s</text><text x="299.06" y="141">0.742 s</text><text x="291.00" y="191">0.021 s</text><text x="291.00" y="241">0.017 s</text><text x="298.03" y="291">0.658 s</text><text x="1010.00" y="341">58.943 s</text><text x="295.42" y="391">0.444 s</text><text x="324.84" y="441">2.852 s</text>
+</svg>

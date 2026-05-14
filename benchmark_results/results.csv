@@ -1,0 +1,9 @@
+benchmark,variant,mean_seconds,runs,samples_seconds
+List comprehension vs for loop,List comprehension,0.674219,500,"0.678978,0.674902,0.665371,0.680261,0.671586"
+List comprehension vs for loop,For loop with append,0.741704,500,"0.734268,0.741126,0.729721,0.730471,0.772934"
+String join vs string +=,String join,0.020989,300,"0.021017,0.020974,0.020946,0.020940,0.021066"
+String join vs string +=,String +=,0.016717,30,"0.016982,0.016641,0.016630,0.016661,0.016674"
+Dict lookup vs list search,Dict lookup,0.657669,200,"0.653299,0.650098,0.654082,0.668540,0.662327"
+Dict lookup vs list search,List search,58.943275,200,"54.661290,62.166683,61.487060,57.812992,58.588352"
+Set membership vs list membership,Set membership,0.443505,200,"0.444173,0.442446,0.445287,0.444618,0.441002"
+Set membership vs list membership,List membership,2.852063,40,"2.877704,2.857290,2.822728,2.849885,2.852710"
