@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тесты в Python и CPython</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #121933;
+      --panel: rgba(18, 25, 51, 0.82);
+      --panel-strong: rgba(22, 30, 60, 0.96);
+      --line: rgba(154, 168, 201, 0.24);
+      --text: #ebf1ff;
+      --muted: #9aa8c9;
+      --accent: #5eead4;
+      --accent-2: #60a5fa;
+      --accent-3: #f59e0b;
+      --good: #34d399;
+      --bad: #fb7185;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "SF Pro Display", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(94, 234, 212, 0.12), transparent 26%),
+        linear-gradient(180deg, #060914 0%, #0b1020 45%, #0a1328 100%);
+    }
+
+    .deck {
+      width: min(1200px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(18px);
+      background: rgba(7, 10, 22, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #04111d;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(154, 168, 201, 0.18);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .slide {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px;
+      margin: 0 0 24px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(13, 18, 38, 0.96), rgba(9, 13, 28, 0.96));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(94, 234, 212, 0.08), transparent 35%),
+        linear-gradient(330deg, rgba(96, 165, 250, 0.10), transparent 32%);
+      pointer-events: none;
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(94, 234, 212, 0.24);
+      background: rgba(94, 234, 212, 0.08);
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 0.95;
+      max-width: 900px;
+    }
+
+    h2 {
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.04;
+      max-width: 900px;
+    }
+
+    .lead {
+      max-width: 760px;
+      font-size: clamp(18px, 2vw, 24px);
+      line-height: 1.45;
+      color: #dce6ff;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .hero-grid,
+    .split,
+    .grid-2,
+    .grid-3,
+    .stats,
+    .compare {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.4fr 0.9fr;
+      align-items: end;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3,
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .split {
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: start;
+    }
+
+    .compare {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    .card,
+    .metric,
+    .panel {
+      padding: 22px;
+      border-radius: 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .card h3,
+    .metric h3,
+    .panel h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .metric-value {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 20px;
+      color: #dce6ff;
+      line-height: 1.55;
+      font-size: 17px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 15px;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #d8e6ff;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(5, 9, 22, 0.88);
+      border: 1px solid rgba(96, 165, 250, 0.18);
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    .accent-2 {
+      color: var(--accent-2);
+    }
+
+    .accent-3 {
+      color: var(--accent-3);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(154, 168, 201, 0.18);
+      color: #dce6ff;
+      font-size: 14px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 14px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(154, 168, 201, 0.16);
+    }
+
+    .flow-index {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #04111d;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .chart-frame {
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      overflow: hidden;
+    }
+
+    .chart-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: 1.7fr 0.8fr 1.2fr;
+      gap: 1px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(154, 168, 201, 0.12);
+      border: 1px solid rgba(154, 168, 201, 0.12);
+    }
+
+    .cell {
+      padding: 16px 18px;
+      background: rgba(15, 20, 40, 0.96);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .cell.head {
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(19, 28, 55, 0.98);
+    }
+
+    .callout {
+      padding: 22px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.18), rgba(94, 234, 212, 0.12));
+      border: 1px solid rgba(96, 165, 250, 0.22);
+      font-size: 18px;
+      line-height: 1.5;
+      color: #eff5ff;
+    }
+
+    .danger {
+      border-color: rgba(251, 113, 133, 0.24);
+      background: rgba(62, 16, 28, 0.56);
+    }
+
+    .good {
+      border-color: rgba(52, 211, 153, 0.24);
+      background: rgba(12, 46, 38, 0.56);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .deck {
+        width: min(100vw - 24px, 1200px);
+      }
+
+      .slide {
+        min-height: auto;
+        padding: 28px 22px;
+      }
+
+      .hero-grid,
+      .split,
+      .grid-2,
+      .grid-3,
+      .stats,
+      .compare {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        position: static;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .table {
+        grid-template-columns: 1fr;
+      }
+
+      .cell.head {
+        display: none;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #111827;
+      }
+
+      .deck {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .topbar {
+        display: none;
+      }
+
+      .slide {
+        min-height: auto;
+        break-after: page;
+        box-shadow: none;
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        color: #111827;
+      }
+
+      .slide::before {
+        display: none;
+      }
+
+      .card,
+      .metric,
+      .panel,
+      .callout,
+      .cell {
+        background: #ffffff;
+        color: #111827;
+        border-color: #d1d5db;
+      }
+
+      .eyebrow,
+      .brand-badge {
+        color: #111827;
+      }
+
+      .muted,
+      .footer-note,
+      ul,
+      ol,
+      .lead {
+        color: #374151;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">Py</div>
+        <div class="brand-text">
+          <p class="brand-title">Тесты в Python и CPython</p>
+          <p class="brand-subtitle">Учебный проект, практика, CI, бенчмарки</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#title">Тема</a>
+        <a href="#compare">Сравнение</a>
+        <a href="#bench">Бенчмарки</a>
+        <a href="#cpython">CPython</a>
+        <a href="#final">Итоги</a>
+      </nav>
+    </div>
+
+    <section class="slide" id="title">
+      <div class="slide-content hero-grid">
+        <div>
+          <div class="eyebrow">Презентация проекта</div>
+          <h1>Тесты в <span class="accent">Python</span><br />и <span class="accent-2">CPython</span></h1>
+          <p class="lead">
+            Сравнение <code>unittest</code> и <code>pytest</code>, линтеры и тайпчекеры,
+            автоматический CI, мини-бенчмарки и то, как проверка кода устроена в CPython.
+          </p>
+          <div class="pill-row" style="margin-top: 22px;">
+            <div class="pill">unit tests</div>
+            <div class="pill">pytest</div>
+            <div class="pill">unittest</div>
+            <div class="pill">ruff</div>
+            <div class="pill">mypy</div>
+            <div class="pill">GitHub Actions</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="metric">
+            <div class="metric-value">28</div>
+            <h3>Тестов на `pytest`</h3>
+            <p class="muted">Плюс 20 `subtests`, проходящих в локальном прогоне.</p>
+          </div>
+          <div class="metric">
+            <div class="metric-value">4</div>
+            <h3>Мини-бенчмарка</h3>
+            <p class="muted">Сравнение структур данных и подходов к коду.</p>
+          </div>
+          <div class="metric">
+            <div class="metric-value">1</div>
+            <h3>CI pipeline</h3>
+            <p class="muted">Автопроверка тестов, линтера и тайпчекера.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">Цель</div>
+        <h2>Показать, как тесты пишутся, запускаются и масштабируются</h2>
+        <div class="grid-3" style="margin-top: 22px;">
+          <div class="card">
+            <h3>Теория</h3>
+            <ul>
+              <li>виды тестов в Python</li>
+              <li>роль regression и performance тестов</li>
+              <li>статический анализ до запуска программы</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Практика</h3>
+            <ul>
+              <li>тесты на `unittest` и `pytest`</li>
+              <li>стресс-тест на 2000 входов</li>
+              <li>мини-бенчмарки и графики</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Инфраструктура</h3>
+            <ul>
+              <li>локальный прогон</li>
+              <li>CI в GitHub Actions</li>
+              <li>pipeline проверок в CPython</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">Виды тестов</div>
+        <h2>В проекте использованы несколько уровней проверки</h2>
+        <div class="grid-2" style="margin-top: 22px;">
+          <div class="panel">
+            <h3><span class="accent">Unit tests</span></h3>
+            <p class="muted">Проверяют одну функцию или небольшой блок логики.</p>
+          </div>
+          <div class="panel">
+            <h3><span class="accent-2">Regression tests</span></h3>
+            <p class="muted">Подтверждают, что старая ошибка не вернулась после изменений.</p>
+          </div>
+          <div class="panel">
+            <h3><span class="accent-3">Integration tests</span></h3>
+            <p class="muted">Проверяют, как несколько частей системы работают вместе.</p>
+          </div>
+          <div class="panel">
+            <h3><span class="accent">Performance tests</span></h3>
+            <p class="muted">Измеряют время выполнения и помогают сравнить подходы.</p>
+          </div>
+        </div>
+        <div class="callout" style="margin-top: 22px;">
+          В этом проекте основной акцент сделан на <strong>unit</strong> и <strong>performance</strong> тесты,
+          потому что их проще всего показать на компактном учебном примере и при этом получить измеримый результат.
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="compare">
+      <div class="slide-content">
+        <div class="eyebrow">Сравнение фреймворков</div>
+        <h2>`unittest` и `pytest` решают одну задачу, но делают это по-разному</h2>
+        <div class="compare" style="margin-top: 22px;">
+          <div class="card">
+            <h3>`unittest`</h3>
+            <ul>
+              <li>входит в стандартную библиотеку Python</li>
+              <li>использует `TestCase` и методы `assertEqual`, `assertRaises`</li>
+              <li>подходит для классического xUnit-стиля</li>
+              <li>удобен там, где важен стандартный встроенный инструмент</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>`pytest`</h3>
+            <ul>
+              <li>использует обычный `assert`</li>
+              <li>дает более короткий и читаемый код тестов</li>
+              <li>удобен для параметризации и разбора падений</li>
+              <li>часто быстрее в повседневной разработке</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout good" style="margin-top: 22px;">
+          Вывод: оба инструмента рабочие. Для учебного и прикладного кода `pytest` обычно удобнее,
+          а `unittest` полезен как стандартная встроенная база.
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content split">
+        <div>
+          <div class="eyebrow">Практическая часть</div>
+          <h2>Тесты стали тяжелее, чем простая проверка `2 + 2`</h2>
+          <ul style="margin-top: 22px;">
+            <li>базовые тесты всех арифметических операций</li>
+            <li>проверка деления на ноль</li>
+            <li>набор фиксированных кейсов</li>
+            <li>stress-test на 2000 детерминированных входов</li>
+          </ul>
+          <div class="callout" style="margin-top: 22px;">
+            Это делает сравнение двух фреймворков содержательным: они тестируют один и тот же код
+            не только на простых случаях, но и на более широкой выборке данных.
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="metric">
+            <div class="metric-value">28</div>
+            <h3>`pytest`</h3>
+            <p class="muted">Локальный прогон завершился без ошибок.</p>
+          </div>
+          <div class="metric">
+            <div class="metric-value">20</div>
+            <h3>`subtests`</h3>
+            <p class="muted">Подтверждают корректность набора дополнительных сценариев.</p>
+          </div>
+          <div class="metric">
+            <div class="metric-value">OK</div>
+            <h3>`unittest`</h3>
+            <p class="muted">Стандартный прогон тоже полностью проходит.</p>
+          </div>
+          <div class="metric">
+            <div class="metric-value">0</div>
+            <h3>Ошибок в статике</h3>
+            <p class="muted">`ruff` и `mypy` завершились чисто.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">Статический анализ</div>
+        <h2>Тестов недостаточно без линтера и тайпчекера</h2>
+        <div class="grid-2" style="margin-top: 22px;">
+          <div class="card">
+            <h3>`ruff`</h3>
+            <p class="muted">Проверяет стиль, потенциальные ошибки и проблемные конструкции в коде.</p>
+            <div class="code">ruff check .</div>
+          </div>
+          <div class="card">
+            <h3>`mypy`</h3>
+            <p class="muted">Проверяет, насколько код согласован с аннотациями типов.</p>
+            <div class="code">mypy .</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top: 22px;">
+          Тесты проверяют <strong>поведение</strong>, а `ruff` и `mypy` добавляют раннюю проверку
+          <strong>структуры</strong> и <strong>типовой корректности</strong> кода.
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="bench">
+      <div class="slide-content">
+        <div class="eyebrow">Бенчмарки</div>
+        <h2>Четыре мини-бенчмарка дают уже не описание, а измеримые результаты</h2>
+        <div class="table" style="margin-top: 22px;">
+          <div class="cell head">Сценарий</div>
+          <div class="cell head">Победитель</div>
+          <div class="cell head">Что показывает</div>
+
+          <div class="cell">List comprehension vs `for` loop</div>
+          <div class="cell">List comprehension</div>
+          <div class="cell">Компактный синтаксис часто дает небольшой выигрыш.</div>
+
+          <div class="cell">`"".join(...)` vs `+=`</div>
+          <div class="cell">`+=` в этом прогоне</div>
+          <div class="cell">Микробенчмарки чувствительны к масштабу и условиям запуска.</div>
+
+          <div class="cell">Dict lookup vs list search</div>
+          <div class="cell">Dict lookup</div>
+          <div class="cell">Структура данных сильно влияет на скорость поиска.</div>
+
+          <div class="cell">Set membership vs list membership</div>
+          <div class="cell">Set membership</div>
+          <div class="cell">Проверка принадлежности в `set` обычно заметно быстрее.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">График 1</div>
+        <h2>Общие времена выполнения</h2>
+        <div class="chart-frame" style="margin-top: 22px;">
+          <img src="benchmark_results/totals.svg" alt="Benchmark totals" />
+        </div>
+        <p class="footer-note">Файл: `benchmark_results/totals.svg`</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">График 2</div>
+        <h2>Относительный выигрыш по скорости</h2>
+        <div class="chart-frame" style="margin-top: 22px;">
+          <img src="benchmark_results/speedup.svg" alt="Benchmark speedup" />
+        </div>
+        <p class="footer-note">Файл: `benchmark_results/speedup.svg`</p>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content split">
+        <div>
+          <div class="eyebrow">CI pipeline</div>
+          <h2>Даже маленький проект должен проверяться автоматически</h2>
+          <div class="flow" style="margin-top: 22px;">
+            <div class="flow-step">
+              <div class="flow-index">1</div>
+              <div>
+                <h3>Установка зависимостей</h3>
+                <p class="muted">Готовит окружение перед запуском проверок.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-index">2</div>
+              <div>
+                <h3>`pytest`</h3>
+                <p class="muted">Проверяет функциональное поведение проекта.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-index">3</div>
+              <div>
+                <h3>`ruff` и `mypy`</h3>
+                <p class="muted">Добавляют статический контроль качества кода.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Когда срабатывает workflow</h3>
+          <ul>
+            <li>при `push`</li>
+            <li>при `pull_request`</li>
+          </ul>
+          <div class="code" style="margin-top: 18px;">.github/workflows/ci.yml</div>
+          <p class="muted" style="margin-top: 16px;">
+            Это переводит проверки из ручного режима в автоматический и повторяемый.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="cpython">
+      <div class="slide-content">
+        <div class="eyebrow">CPython</div>
+        <h2>В CPython тестирование — это уже полноценная инфраструктура</h2>
+        <div class="flow" style="margin-top: 22px;">
+          <div class="flow-step">
+            <div class="flow-index">1</div>
+            <div>
+              <h3>Локальные проверки до PR</h3>
+              <p class="muted">Разработчик запускает локальные тесты и утилиты вроде `make patchcheck`.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-index">2</div>
+            <div>
+              <h3>GitHub checks после открытия PR</h3>
+              <p class="muted">Изменения должны пройти автоматические проверки до merge.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-index">3</div>
+            <div>
+              <h3>Buildbots на разных платформах</h3>
+              <p class="muted">Они ловят проблемы, которые не видны на одной локальной машине.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="flow-index">4</div>
+            <div>
+              <h3>Проверки после merge</h3>
+              <p class="muted">Часть ошибок проявляется уже после commit в основной репозиторий.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top: 22px;">
+          Главная мысль: CPython показывает, что тестирование — это не один запуск `pytest`,
+          а система из локальных тестов, CI, многоплатформенных buildbots и пост-merge мониторинга.
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <div class="slide-content">
+        <div class="eyebrow">Лабораторная часть</div>
+        <h2>Плохие тесты тоже полезны, если использовать их как учебный материал</h2>
+        <div class="grid-3" style="margin-top: 22px;">
+          <div class="card danger">
+            <h3>Нет `assert`</h3>
+            <p class="muted">Тест формально запускается, но ничего не проверяет.</p>
+          </div>
+          <div class="card danger">
+            <h3>Неверное ожидаемое значение</h3>
+            <p class="muted">Показывает прямое падение при неправильной логике проверки.</p>
+          </div>
+          <div class="card danger">
+            <h3>Слабая проверка</h3>
+            <p class="muted">Условие слишком широкое и не гарантирует корректность.</p>
+          </div>
+          <div class="card danger">
+            <h3>Нет проверки исключения</h3>
+            <p class="muted">Код падает, а тест не оформляет это как ожидаемое поведение.</p>
+          </div>
+          <div class="card danger">
+            <h3>Shared mutable state</h3>
+            <p class="muted">Тесты начинают зависеть друг от друга.</p>
+          </div>
+          <div class="card danger">
+            <h3>Copy-paste ошибка</h3>
+            <p class="muted">Частый практический источник ложных падений и путаницы.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" id="final">
+      <div class="slide-content">
+        <div class="eyebrow">Итоги</div>
+        <h2>Проект стал полноценнее после усиления практики и добавления графиков</h2>
+        <div class="grid-2" style="margin-top: 22px;">
+          <div class="card">
+            <h3>Что сделано</h3>
+            <ul>
+              <li>рассмотрены виды тестов</li>
+              <li>сравнены `unittest` и `pytest`</li>
+              <li>показаны `ruff` и `mypy`</li>
+              <li>собран маленький CI pipeline</li>
+              <li>добавлены 4 мини-бенчмарка и графики</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Главный вывод</h3>
+            <p class="lead" style="font-size: 22px; max-width: none;">
+              Полноценное тестирование включает не только сами тесты, но и статический анализ,
+              автоматический CI, performance-проверки и инфраструктуру контроля качества,
+              как это устроено в CPython.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
